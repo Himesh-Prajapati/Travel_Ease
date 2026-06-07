@@ -23,6 +23,7 @@ const CarDetails = () => {
     try {
       const { data } = await axios.post('/api/bookings/create', {
         car: id,
+        pickupLocation,
         pickupDate,
         returnDate
       })

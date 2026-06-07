@@ -11,6 +11,7 @@ const checkAvailability = async (car, pickupDate, returnDate) => {
         pickupDate: { $lte: returnDate },
         returnDate: { $gte: pickupDate },
     })
+    
     return bookings.length === 0;
 }
 
@@ -75,7 +76,7 @@ export const createBooking = async (req, res) => {
             (1000 * 60 * 60 * 24)
         );
 
-        const price = carData.pricePerDay * noOfDays;
+        const price = carData.pricePerKm;
 
         const booking = await Booking.create({
             car,
@@ -100,7 +101,8 @@ export const createBooking = async (req, res) => {
             <p><strong>Pickup Location:</strong> ${pickupLocation}</p>
             <p><strong>Pickup Date:</strong> ${pickupDate}</p>
             <p><strong>Return Date:</strong> ${returnDate}</p>
-            <p><strong>Total Price:</strong> ₹${price}</p>
+            <p><strong>Rate:</strong> ₹${carData.pricePerKm}/km</p>
+            <p><strong>Note:</strong> Final bill will be calculated based on total kilometers travelled.</p>
     `
         });
 
