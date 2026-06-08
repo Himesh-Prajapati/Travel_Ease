@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useState} from 'react'
 import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 
@@ -12,25 +12,40 @@ const Login = () => {
     const [phone, setPhone] = React.useState("");
     const [password, setPassword] = React.useState("");
 
+    const [loading, setLoading] = useState(false);
+
     const onSubmitHandler = async (event) => {
+        event.preventDefault();
+
         try {
-            event.preventDefault();
-            const { data } = await axios.post(`/api/user/${state}`, { name, email, phone, password })
+            setLoading(true);
+
+            const { data } = await axios.post(
+                `/api/user/${state}`,
+                { name, email, phone, password }
+            );
 
             if (data.success) {
-                navigate('/')
-                setToken(data.token)
-                localStorage.setItem('token', data.token)
-                setShowLogin(false)
+                toast.success(
+                    state === "login"
+                        ? "Login Successful"
+                        : "Account Created Successfully"
+                );
+
+                navigate('/');
+                setToken(data.token);
+                localStorage.setItem('token', data.token);
+                setShowLogin(false);
             } else {
-                toast.error(data.message)
+                toast.error(data.message);
             }
 
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.response?.data?.message || error.message);
+        } finally {
+            setLoading(false);
         }
-
-    }
+    };
 
     return (
         <div onClick={() => setShowLogin(false)} className='fixed top-0 bottom-0 left-0 right-0 z-100 flex items-center text-sm text-gray-600 bg-black/50'>
@@ -83,8 +98,23 @@ const Login = () => {
                         Create an account? <span onClick={() => setState("register")} className="text-primary cursor-pointer">click here</span>
                     </p>
                 )}
-                <button className="bg-primary hover:bg-blue-800 transition-all text-white w-full py-2 rounded-md cursor-pointer">
-                    {state === "register" ? "Create Account" : "Login"}
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-primary text-white w-full py-2 rounded-md"
+                >
+                    {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            {state === "login"
+                                ? "Logging in..."
+                                : "Creating Account..."}
+                        </span>
+                    ) : (
+                        state === "register"
+                            ? "Create Account"
+                            : "Login"
+                    )}
                 </button>
             </form>
         </div>

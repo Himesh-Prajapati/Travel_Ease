@@ -11,7 +11,7 @@ const checkAvailability = async (car, pickupDate, returnDate) => {
         pickupDate: { $lte: returnDate },
         returnDate: { $gte: pickupDate },
     })
-    
+
     return bookings.length === 0;
 }
 
@@ -89,11 +89,14 @@ export const createBooking = async (req, res) => {
         });
 
         const user = await User.findById(_id);
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: process.env.EMAIL_USER,
-            subject: "New Booking Request",
-            html: `
+
+
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: process.env.EMAIL_USER,
+                subject: "New Booking Request",
+                html: `
             <h2>New Booking Received</h2>
             <p><strong>Name:</strong> ${user.name}</p>
             <p><strong>Email:</strong> ${user.email}</p>
@@ -104,7 +107,11 @@ export const createBooking = async (req, res) => {
             <p><strong>Rate:</strong> ₹${carData.pricePerKm}/km</p>
             <p><strong>Note:</strong> Final bill will be calculated based on total kilometers travelled.</p>
     `
-        });
+            });
+        } catch (error) {
+            console.error("Email Error:", error);
+        }
+
 
         res.json({
             success: true,
